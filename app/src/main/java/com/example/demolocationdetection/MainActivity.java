@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button btnCurrent, btnUpdate, btnRemove;
     FusedLocationProviderClient client;
+    LocationCallback mLocationCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,29 +36,28 @@ public class MainActivity extends AppCompatActivity {
 
         client = LocationServices.getFusedLocationProviderClient(this);
 
-
-        final LocationCallback mLocationCallback = new LocationCallback() {
+        mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     Location data = locationResult.getLastLocation();
                     double lat = data.getLatitude();
                     double lng = data.getLongitude();
-                    Toast.makeText(MainActivity.this, "Lat: " + String.valueOf(lat) + " Lng" + String.valueOf(lng), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "New Loc Detected \nLat: " + lat + ", Lng: " + lng, Toast.LENGTH_LONG).show();
 
                 }
-            };
+            }
         };
 
         btnCurrent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkPermission() == true) {
+                if (checkPermission() == true) {
                     Task<Location> task = client.getLastLocation();
                     task.addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            if(location != null) {
+                            if (location != null) {
                                 String msg = "Lat : " + location.getLatitude() +
                                         "Lng : " + location.getLongitude();
                                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
@@ -78,14 +78,13 @@ public class MainActivity extends AppCompatActivity {
         btnUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (checkPermission()) {
 
-                LocationRequest mLocationRequest = LocationRequest.create();
-                mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                mLocationRequest.setInterval(10000);
-                mLocationRequest.setFastestInterval(5000);
-                mLocationRequest.setSmallestDisplacement(100);
-
-                if(checkPermission() == true) {
+                    LocationRequest mLocationRequest = new LocationRequest();
+                    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    mLocationRequest.setInterval(10000);
+                    mLocationRequest.setFastestInterval(5000);
+                    mLocationRequest.setSmallestDisplacement(100);
 
                     client.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
 
@@ -106,11 +105,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
-
     }
 
-    private boolean checkPermission(){
+    private boolean checkPermission() {
         int permissionCheck_Coarse = ContextCompat.checkSelfPermission(
                 MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION);
         int permissionCheck_Fine = ContextCompat.checkSelfPermission(
